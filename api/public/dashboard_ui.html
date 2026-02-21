@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform Dashboard | Artist Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --accent: #f59e0b;
+            --dark-bg: #0f172a;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --sidebar-w: 280px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--dark-bg);
+            color: #f8fafc;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 3.5rem;
+            padding: 0 10px;
+        }
+
+        .brand-icon {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 18px;
+            border-radius: 14px;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .logout-btn {
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: #fb7185;
+        }
+
+        .logout-btn:hover {
+            background: rgba(244, 63, 94, 0.1);
+            border-color: #fb7185;
+            color: #fb7185;
+        }
+
+        /* Main Content */
+        .main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            padding: 3rem 4rem;
+            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent),
+                radial-gradient(circle at bottom left, rgba(236, 72, 153, 0.05), transparent);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4rem;
+        }
+
+        .greeting h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .greeting p {
+            color: #94a3b8;
+            margin-top: 6px;
+            font-size: 1.1rem;
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 16px 8px 8px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2.5rem;
+            border-radius: 28px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: var(--primary);
+            filter: blur(80px);
+            opacity: 0.1;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 0.8rem;
+        }
+
+        .stat-value {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .stat-trend {
+            font-size: 0.9rem;
+            color: #10b981;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 10px;
+        }
+
+        /* Welcome Section */
+        .hero-banner {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 3rem;
+            border-radius: 32px;
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .hero-info h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero-info p {
+            color: #94a3b8;
+            line-height: 1.7;
+            font-size: 1.1rem;
+        }
+
+        /* Loader */
+        #page-loader {
+            position: fixed;
+            inset: 0;
+            background: var(--dark-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s;
+        }
+
+        .loader-content {
+            text-align: center;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.05);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.5, 0.2, 0.2, 0.8) infinite;
+            margin: 0 auto 1.5rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        if (!localStorage.getItem('token')) {
+            window.location.href = '/login.html';
+        }
+    </script>
+
+    <div id="page-loader">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <p style="color: #94a3b8; letter-spacing: 1px; font-weight: 600;">PLATFORM AUTHENTICATION...</p>
+        </div>
+    </div>
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i data-lucide="sparkles" size="24" color="white"></i></div>
+            <span>Artist App</span>
+        </div>
+
+        <nav class="nav-group">
+            <a href="/dashboard_ui.html" class="nav-item active"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+            <a href="/users_ui.html" class="nav-item"><i data-lucide="users"></i> User Management</a>
+            <a href="#" class="nav-item"><i data-lucide="user-check"></i> Artists</a>
+            <a href="#" class="nav-item"><i data-lucide="calendar-days"></i> Booking Logs</a>
+            <a href="#" class="nav-item"><i data-lucide="bar-chart-3"></i> Financials</a>
+            <a href="#" class="nav-item"><i data-lucide="shield-check"></i> Security</a>
+        </nav>
+
+        <a href="#" class="nav-item logout-btn" onclick="logout()"><i data-lucide="power"></i> Terminate Session</a>
+    </aside>
+
+    <main class="main">
+        <header>
+            <div class="greeting">
+                <h1 id="welcome-msg">System Initializing...</h1>
+                <p>Global monitoring & platform control</p>
+            </div>
+            <div class="user-pill">
+                <div class="avatar" id="avatar-char">A</div>
+                <div style="text-align: left">
+                    <div id="user-email" style="font-weight: 600; font-size: 0.9rem;">Admin User</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Super Administrator
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total platform users</div>
+                <div id="user-stats" class="stat-value">--</div>
+                <div class="stat-trend"><i data-lucide="trending-up" size="16"></i> +12% this month</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Verified artists</div>
+                <div id="artist-stats" class="stat-value">--</div>
+                <div class="stat-trend"><i data-lucide="check-circle-2" size="16"></i> 98% active now</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active bookings</div>
+                <div id="booking-stats" class="stat-value">--</div>
+                <div class="stat-trend"><i data-lucide="clock" size="16"></i> 5 upcoming today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Platform revenue</div>
+                <div id="revenue-stats" class="stat-value">--</div>
+                <div class="stat-trend" style="color: #6366f1;"><i data-lucide="info" size="16"></i> Net earnings</div>
+            </div>
+        </div>
+
+        <div class="hero-banner">
+            <div
+                style="background: rgba(99, 102, 241, 0.15); padding: 2.5rem; border-radius: 24px; color: var(--primary);">
+                <i data-lucide="zap" size="48"></i>
+            </div>
+            <div class="hero-info">
+                <h2 id="platform-status">Checking systems...</h2>
+                <p id="platform-details">The platform is currently synchronizing with global nodes to ensure data
+                    integrity. Please wait while we fetch the latest metrics from the artist network.</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        async function initDashboard() {
+            const token = localStorage.getItem('token');
+            const email = localStorage.getItem('user_email');
+            const loader = document.getElementById('page-loader');
+
+            if (email) {
+                document.getElementById('user-email').innerText = email;
+                document.getElementById('avatar-char').innerText = email[0].toUpperCase();
+            }
+
+            try {
+                const res = await fetch('/admin/dashboard', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) throw new Error('Auth Failed');
+
+                const data = await res.json();
+
+                // Update UI with real data
+                document.getElementById('user-stats').innerText = data.stats.total_users;
+                document.getElementById('artist-stats').innerText = data.stats.total_artists;
+                document.getElementById('booking-stats').innerText = data.stats.total_bookings;
+                document.getElementById('revenue-stats').innerText = new Intl.NumberFormat('en-US', {
+                    style: 'currency', currency: 'USD'
+                }).format(data.stats.total_payments);
+
+                document.getElementById('welcome-msg').innerText = 'Platform Online';
+                document.getElementById('platform-status').innerText = 'All Services Green';
+                document.getElementById('platform-details').innerText = data.message || 'Platform operational.';
+
+            } catch (err) {
+                console.error(err);
+                if (err.message === 'Auth Failed') logout();
+                document.getElementById('platform-status').innerText = 'Sync Error';
+            } finally {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 500);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user_email');
+            window.location.href = '/login.html';
+        }
+
+        // Run
+        window.addEventListener('DOMContentLoaded', initDashboard);
+
+        // Safety Hide
+        setTimeout(() => {
+            const l = document.getElementById('page-loader');
+            if (l.style.display !== 'none') l.style.display = 'none';
+        }, 4000);
+    </script>
+</body>
+
+</html>
