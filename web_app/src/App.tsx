@@ -1,35 +1,42 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Layout from './components/Layout';
+import Dashboard from './pages/Dashboard';
+import UsersPage from './pages/Users';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import { AuthService } from './services/AuthService';
+
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+  const user = AuthService.getCurrentUser();
+  return user ? <>{children}</> : <Navigate to="/login" />;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <Layout />
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<Dashboard />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="artists" element={<div className="text-gradient"><h1>Artist Directory</h1><p>Find and connect with fellow creators.</p></div>} />
+          <Route path="services" element={<div className="text-gradient"><h1>Your Services</h1><p>Manage your professional offerings.</p></div>} />
+          <Route path="bookings" element={<div className="text-gradient"><h1>Manage Bookings</h1><p>Track your upcoming appointments.</p></div>} />
+          <Route path="reviews" element={<div className="text-gradient"><h1>Reviews & Ratings</h1><p>See what clients are saying about you.</p></div>} />
+          <Route path="settings" element={<div className="text-gradient"><h1>Account Settings</h1><p>Update your profile and preferences.</p></div>} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
