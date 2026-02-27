@@ -3,12 +3,11 @@ import { apiService } from './api';
 export interface ArtistProfile {
     id: string;
     user_id: string;
+    name: string;
     bio: string;
     base_price: number;
     city: string;
     experience_years: number;
-    is_approved: boolean;
-    approved_at: string | null;
     created_at: string;
     updated_at: string;
     user?: { id: string; email: string; role: string };

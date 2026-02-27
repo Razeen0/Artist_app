@@ -8,6 +8,7 @@ import Signup from './pages/Signup';
 import MyServicesPage from './pages/artist/MyServices';
 import MyBookingsPage from './pages/artist/MyBookings';
 import MyReviewsPage from './pages/artist/MyReviews';
+import BrowseArtistsPage from './pages/customer/BrowseArtists';
 import { AuthService } from './services/AuthService';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastProvider } from './components/common/Toast';
@@ -24,7 +25,6 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 const RoleGuard = ({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) => {
   const user = AuthService.getCurrentUser();
   if (!user || !allowedRoles.includes(user.role)) {
-    // Redirect unauthorized users back to dashboard
     return <Navigate to="/" replace />;
   }
   return <>{children}</>;
@@ -56,8 +56,11 @@ function App() {
 
               {/* Artist-only Pages */}
               <Route path="my-services" element={<RoleGuard allowedRoles={['artist']}><MyServicesPage /></RoleGuard>} />
-              <Route path="my-bookings" element={<RoleGuard allowedRoles={['artist']}><MyBookingsPage /></RoleGuard>} />
-              <Route path="my-reviews" element={<RoleGuard allowedRoles={['artist']}><MyReviewsPage /></RoleGuard>} />
+              <Route path="my-bookings" element={<RoleGuard allowedRoles={['artist', 'customer']}><MyBookingsPage /></RoleGuard>} />
+              <Route path="my-reviews" element={<RoleGuard allowedRoles={['artist', 'customer']}><MyReviewsPage /></RoleGuard>} />
+
+              {/* Customer-only Pages */}
+              <Route path="find-artists" element={<RoleGuard allowedRoles={['customer']}><BrowseArtistsPage /></RoleGuard>} />
 
               {/* Admin routes for services/bookings/reviews (admin sees all) */}
               <Route path="services" element={<RoleGuard allowedRoles={['admin']}><MyServicesPage /></RoleGuard>} />

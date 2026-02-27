@@ -3,12 +3,10 @@ import { useArtistProfiles } from '../hooks/useArtistProfiles';
 import type { ArtistProfile } from '../services/ArtistProfileService';
 import {
     AlertCircle, Search, X, MapPin, Calendar, Eye, Trash2,
-    Brush, CheckCircle, Clock, DollarSign, Users
+    Brush, Clock, DollarSign, Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Artists.css';
-
-const FILTERS = ['All', 'Approved', 'Pending'];
 
 const ArtistsPage: React.FC = () => {
     const {
@@ -20,31 +18,21 @@ const ArtistsPage: React.FC = () => {
     } = useArtistProfiles();
 
     const [searchQuery, setSearchQuery] = useState('');
-    const [statusFilter, setStatusFilter] = useState('All');
     const [selectedArtist, setSelectedArtist] = useState<ArtistProfile | null>(null);
 
     const filteredArtists = useMemo(() => {
         return artistProfiles.filter((a: ArtistProfile) => {
             const query = searchQuery.toLowerCase();
-            const matchSearch = !query ||
+            return !query ||
                 (a.bio || '').toLowerCase().includes(query) ||
                 (a.city || '').toLowerCase().includes(query) ||
                 a.user_id.toLowerCase().includes(query) ||
                 (a.user?.email || '').toLowerCase().includes(query);
-
-            const matchStatus =
-                statusFilter === 'All' ||
-                (statusFilter === 'Approved' && a.is_approved) ||
-                (statusFilter === 'Pending' && !a.is_approved);
-
-            return matchSearch && matchStatus;
         });
-    }, [artistProfiles, searchQuery, statusFilter]);
+    }, [artistProfiles, searchQuery]);
 
     const stats = useMemo(() => ({
         total: artistProfiles.length,
-        approved: artistProfiles.filter((a: ArtistProfile) => a.is_approved).length,
-        pending: artistProfiles.filter((a: ArtistProfile) => !a.is_approved).length,
         avgPrice: artistProfiles.length > 0
             ? Math.round(artistProfiles.reduce((sum: number, a: ArtistProfile) => sum + (a.base_price || 0), 0) / artistProfiles.length)
             : 0,
@@ -102,20 +90,6 @@ const ArtistsPage: React.FC = () => {
                     </div>
                 </motion.div>
                 <motion.div className="artists-stat-card" whileHover={{ y: -2 }}>
-                    <div className="artists-stat-icon green"><CheckCircle size={18} /></div>
-                    <div>
-                        <p className="artists-stat-label">Approved</p>
-                        <p className="artists-stat-value">{stats.approved}</p>
-                    </div>
-                </motion.div>
-                <motion.div className="artists-stat-card" whileHover={{ y: -2 }}>
-                    <div className="artists-stat-icon amber"><Clock size={18} /></div>
-                    <div>
-                        <p className="artists-stat-label">Pending Approval</p>
-                        <p className="artists-stat-value">{stats.pending}</p>
-                    </div>
-                </motion.div>
-                <motion.div className="artists-stat-card" whileHover={{ y: -2 }}>
                     <div className="artists-stat-icon purple"><DollarSign size={18} /></div>
                     <div>
                         <p className="artists-stat-label">Avg Base Price</p>
@@ -135,7 +109,7 @@ const ArtistsPage: React.FC = () => {
             {/* Table Card */}
             <div className="artists-table-card">
 
-                {/* Toolbar: Search + Filter */}
+                {/* Toolbar: Search */}
                 <div className="artists-toolbar">
                     <div className="artists-search">
                         <Search size={14} />
@@ -150,17 +124,6 @@ const ArtistsPage: React.FC = () => {
                                 <X size={14} />
                             </button>
                         )}
-                    </div>
-                    <div className="artists-filter-pills">
-                        {FILTERS.map(f => (
-                            <button
-                                key={f}
-                                className={`filter-pill ${statusFilter === f ? 'active' : ''}`}
-                                onClick={() => setStatusFilter(f)}
-                            >
-                                {f}
-                            </button>
-                        ))}
                     </div>
                 </div>
 
@@ -194,15 +157,7 @@ const ArtistsPage: React.FC = () => {
                                             {artist.city || 'Location not set'}
                                         </p>
                                     </div>
-                                    <div className="artist-card-badges">
-                                        <span className={`approval-badge ${artist.is_approved ? 'approved' : 'pending'}`}>
-                                            {artist.is_approved ? (
-                                                <><CheckCircle size={10} /> Approved</>
-                                            ) : (
-                                                <><Clock size={10} /> Pending</>
-                                            )}
-                                        </span>
-                                    </div>
+
                                 </div>
 
                                 {/* Bio */}
@@ -319,22 +274,7 @@ const ArtistsPage: React.FC = () => {
                                     <span className="detail-label">Base Price</span>
                                     <span className="detail-value">${selectedArtist.base_price || 0}</span>
                                 </div>
-                                <div className="artist-detail-row">
-                                    <span className="detail-label">Approval Status</span>
-                                    <span className={`approval-badge ${selectedArtist.is_approved ? 'approved' : 'pending'}`}>
-                                        {selectedArtist.is_approved ? 'Approved' : 'Pending'}
-                                    </span>
-                                </div>
-                                {selectedArtist.approved_at && (
-                                    <div className="artist-detail-row">
-                                        <span className="detail-label">Approved On</span>
-                                        <span className="detail-value">
-                                            {new Date(selectedArtist.approved_at).toLocaleDateString('en-US', {
-                                                month: 'short', day: 'numeric', year: 'numeric'
-                                            })}
-                                        </span>
-                                    </div>
-                                )}
+
                                 <div className="artist-detail-row">
                                     <span className="detail-label">Joined</span>
                                     <span className="detail-value">
@@ -358,10 +298,40 @@ const ArtistsPage: React.FC = () => {
 
                                 {/* Bio */}
                                 {selectedArtist.bio && (
-                                    <div>
+                                    <div style={{ marginBottom: '16px' }}>
                                         <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: '8px' }}>Bio</p>
                                         <div className="artist-bio">
                                             {selectedArtist.bio}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Services List */}
+                                {selectedArtist.services && selectedArtist.services.length > 0 && (
+                                    <div>
+                                        <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: '8px' }}>Available Services</p>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            {selectedArtist.services.map((service: any) => (
+                                                <div key={service.id} style={{
+                                                    padding: '12px',
+                                                    background: 'rgba(255,255,255,0.03)',
+                                                    borderRadius: '8px',
+                                                    border: '1px solid rgba(255,255,255,0.06)'
+                                                }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                                                        <div>
+                                                            <strong style={{ color: 'var(--text-primary)', fontSize: '0.9rem', display: 'block' }}>{service.name}</strong>
+                                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                                                                <Clock size={12} /> {service.duration_minutes} min
+                                                            </span>
+                                                        </div>
+                                                        <span style={{ color: 'var(--brand-primary)', fontWeight: 600, fontSize: '0.95rem' }}>${service.price}</span>
+                                                    </div>
+                                                    {service.description && (
+                                                        <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '6px' }}>{service.description}</p>
+                                                    )}
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 )}
