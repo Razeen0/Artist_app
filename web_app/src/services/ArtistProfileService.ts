@@ -10,7 +10,16 @@ export interface ArtistProfile {
     experience_years: number;
     created_at: string;
     updated_at: string;
-    user?: { id: string; email: string; role: string };
+    user?: {
+        id: string;
+        email: string;
+        role: string;
+        name?: string;
+        phone?: string;
+        address?: string;
+        preferences?: string;
+        loyalty_status?: string;
+    };
     services?: any[];
     bookings?: any[];
     reviews?: any[];

@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
+import AdminLayout from './components/AdminLayout';
 import Dashboard from './pages/Dashboard';
-import UsersPage from './pages/Users';
+import UsersPage from './pages/UsersPage';
+import AdminsPage from './pages/Admins';
 import ArtistsPage from './pages/Artists';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -44,7 +46,7 @@ function App() {
               path="/"
               element={
                 <PrivateRoute>
-                  <Layout />
+                  {AuthService.getCurrentUser()?.role === 'admin' ? <AdminLayout /> : <Layout />}
                 </PrivateRoute>
               }
             >
@@ -52,6 +54,7 @@ function App() {
 
               {/* Admin-only Pages */}
               <Route path="users" element={<RoleGuard allowedRoles={['admin']}><UsersPage /></RoleGuard>} />
+              <Route path="admins" element={<RoleGuard allowedRoles={['admin']}><AdminsPage /></RoleGuard>} />
               <Route path="artists" element={<RoleGuard allowedRoles={['admin']}><ArtistsPage /></RoleGuard>} />
 
               {/* Artist-only Pages */}

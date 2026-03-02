@@ -130,7 +130,7 @@ const MyServicesPage: React.FC = () => {
                 flexWrap: 'wrap',
                 position: 'relative'
             }}>
-                <User size={16} style={{ color: '#60a5fa', flexShrink: 0 }} />
+                <User size={16} style={{ color: '#f472b6', flexShrink: 0 }} />
                 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Your display name (shown to customers):</span>
                 <input
                     value={displayName}
@@ -157,7 +157,7 @@ const MyServicesPage: React.FC = () => {
                         background: nameSaved ? 'rgba(16,185,129,0.2)' : 'rgba(59,130,246,0.2)',
                         border: `1px solid ${nameSaved ? 'rgba(16,185,129,0.4)' : 'rgba(59,130,246,0.4)'}`,
                         borderRadius: '7px',
-                        color: nameSaved ? '#34d399' : '#60a5fa',
+                        color: nameSaved ? '#34d399' : '#f472b6',
                         fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer',
                         transition: 'all 0.2s'
                     }}

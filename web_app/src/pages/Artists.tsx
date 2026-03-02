@@ -3,10 +3,13 @@ import { useArtistProfiles } from '../hooks/useArtistProfiles';
 import type { ArtistProfile } from '../services/ArtistProfileService';
 import {
     AlertCircle, Search, X, MapPin, Calendar, Eye, Trash2,
-    Brush, Clock, DollarSign, Users
+    Brush, Clock, DollarSign, Users, Plus, Edit2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Artists.css';
+import AddUserModal from '../components/admin/AddUserModal';
+import EditUserModal from '../components/admin/EditUserModal';
+import ConfirmDeleteModal from '../components/common/ConfirmDeleteModal';
 
 const ArtistsPage: React.FC = () => {
     const {
@@ -19,6 +22,10 @@ const ArtistsPage: React.FC = () => {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedArtist, setSelectedArtist] = useState<ArtistProfile | null>(null);
+    const [isAddModalOpen, setAddModalOpen] = useState(false);
+    const [isEditModalOpen, setEditModalOpen] = useState(false);
+    const [selectedEditUser, setSelectedEditUser] = useState<any | null>(null);
+    const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
     const filteredArtists = useMemo(() => {
         return artistProfiles.filter((a: ArtistProfile) => {
@@ -47,8 +54,14 @@ const ArtistsPage: React.FC = () => {
     };
 
     const handleDelete = (id: string) => {
-        if (!window.confirm('Are you sure you want to delete this artist profile? This action cannot be undone.')) return;
-        deleteArtistProfile(id);
+        setDeleteTargetId(id);
+    };
+
+    const handleEditArtist = (artist: ArtistProfile) => {
+        if (artist.user) {
+            setSelectedEditUser(artist.user);
+            setEditModalOpen(true);
+        }
     };
 
     if (isLoading) {
@@ -74,9 +87,14 @@ const ArtistsPage: React.FC = () => {
                         <p>Manage and monitor all artist profiles on the platform</p>
                     </div>
                 </div>
-                <div className="artists-total-badge">
-                    <span className="label">Total</span>
-                    <span className="count">{stats.total}</span>
+                <div className="artists-header-right" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <button className="btn-primary" onClick={() => setAddModalOpen(true)}>
+                        <Plus size={16} /> Add Artist
+                    </button>
+                    <div className="artists-total-badge">
+                        <span className="label">Total</span>
+                        <span className="count">{stats.total}</span>
+                    </div>
                 </div>
             </div>
 
@@ -151,7 +169,7 @@ const ArtistsPage: React.FC = () => {
                                         {getInitial(artist)}
                                     </div>
                                     <div className="artist-card-info">
-                                        <p className="artist-email">{artist.user?.email || `Artist #${artist.id.slice(0, 8)}`}</p>
+                                        <p className="artist-email">{artist.name || artist.user?.name || artist.user?.email || `Artist #${artist.id.slice(0, 8)}`}</p>
                                         <p className="artist-city">
                                             <MapPin size={12} />
                                             {artist.city || 'Location not set'}
@@ -198,6 +216,13 @@ const ArtistsPage: React.FC = () => {
                                             <Eye size={14} />
                                         </button>
                                         <button
+                                            className="artist-action-btn edit"
+                                            title="Edit User"
+                                            onClick={() => handleEditArtist(artist)}
+                                        >
+                                            <Edit2 size={14} />
+                                        </button>
+                                        <button
                                             className="artist-action-btn delete"
                                             title="Delete Profile"
                                             onClick={() => handleDelete(artist.id)}
@@ -239,100 +264,87 @@ const ArtistsPage: React.FC = () => {
                             className="artist-modal-card"
                         >
                             <div className="artist-modal-header">
-                                <h3>Artist Profile</h3>
+                                <h3>🎨 Artist Profile</h3>
                                 <button className="artist-modal-close" onClick={() => setSelectedArtist(null)}>
                                     <X size={15} />
                                 </button>
                             </div>
 
                             <div className="artist-modal-body">
-                                {/* Avatar + Email */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                                    <div className={`artist-avatar ${getAvatarGradient(selectedArtist.id)}`}>
+
+                                {/* Hero: Avatar + Name */}
+                                <div className="artist-modal-hero">
+                                    <div className={`artist-modal-avatar ${getAvatarGradient(selectedArtist.id)}`}>
                                         {getInitial(selectedArtist)}
                                     </div>
                                     <div>
-                                        <p style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.95rem' }}>
-                                            {selectedArtist.user?.email || `Artist #${selectedArtist.id.slice(0, 8)}`}
+                                        <p className="artist-modal-name">
+                                            {selectedArtist.name || selectedArtist.user?.name || selectedArtist.user?.email || `Artist #${selectedArtist.id.slice(0, 8)}`}
                                         </p>
-                                        <p style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginTop: '2px', fontFamily: 'monospace' }}>
-                                            ID: {selectedArtist.id}
-                                        </p>
+                                        <p className="artist-modal-id">ID: {selectedArtist.id.slice(0, 16)}…</p>
                                     </div>
                                 </div>
 
-                                {/* Details */}
-                                <div className="artist-detail-row">
-                                    <span className="detail-label">City</span>
-                                    <span className="detail-value">{selectedArtist.city || '—'}</span>
-                                </div>
-                                <div className="artist-detail-row">
-                                    <span className="detail-label">Experience</span>
-                                    <span className="detail-value">{selectedArtist.experience_years || 0} years</span>
-                                </div>
-                                <div className="artist-detail-row">
-                                    <span className="detail-label">Base Price</span>
-                                    <span className="detail-value">${selectedArtist.base_price || 0}</span>
-                                </div>
-
-                                <div className="artist-detail-row">
-                                    <span className="detail-label">Joined</span>
-                                    <span className="detail-value">
-                                        {new Date(selectedArtist.created_at).toLocaleDateString('en-US', {
-                                            month: 'short', day: 'numeric', year: 'numeric'
-                                        })}
-                                    </span>
-                                </div>
-                                <div className="artist-detail-row">
-                                    <span className="detail-label">Services</span>
-                                    <span className="detail-value">{selectedArtist.services?.length || 0}</span>
-                                </div>
-                                <div className="artist-detail-row">
-                                    <span className="detail-label">Bookings</span>
-                                    <span className="detail-value">{selectedArtist.bookings?.length || 0}</span>
-                                </div>
-                                <div className="artist-detail-row">
-                                    <span className="detail-label">Reviews</span>
-                                    <span className="detail-value">{selectedArtist.reviews?.length || 0}</span>
+                                {/* Info Grid */}
+                                <div className="artist-modal-info-grid">
+                                    <div className="artist-modal-info-item">
+                                        <span className="artist-modal-info-label">📍 City</span>
+                                        <span className="artist-modal-info-value">{selectedArtist.city || '—'}</span>
+                                    </div>
+                                    <div className="artist-modal-info-item">
+                                        <span className="artist-modal-info-label">⏱ Experience</span>
+                                        <span className="artist-modal-info-value">{selectedArtist.experience_years || 0} yrs</span>
+                                    </div>
+                                    <div className="artist-modal-info-item">
+                                        <span className="artist-modal-info-label">💰 Base Price</span>
+                                        <span className="artist-modal-info-value pink">${selectedArtist.base_price || 0}</span>
+                                    </div>
+                                    <div className="artist-modal-info-item">
+                                        <span className="artist-modal-info-label">📅 Joined</span>
+                                        <span className="artist-modal-info-value">
+                                            {new Date(selectedArtist.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                        </span>
+                                    </div>
+                                    <div className="artist-modal-info-item">
+                                        <span className="artist-modal-info-label">🛠 Services</span>
+                                        <span className="artist-modal-info-value">{selectedArtist.services?.length || 0}</span>
+                                    </div>
+                                    <div className="artist-modal-info-item">
+                                        <span className="artist-modal-info-label">📦 Bookings</span>
+                                        <span className="artist-modal-info-value">{selectedArtist.bookings?.length || 0}</span>
+                                    </div>
                                 </div>
 
                                 {/* Bio */}
                                 {selectedArtist.bio && (
-                                    <div style={{ marginBottom: '16px' }}>
-                                        <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: '8px' }}>Bio</p>
-                                        <div className="artist-bio">
+                                    <div>
+                                        <p className="artist-modal-section-title">Bio</p>
+                                        <div className="artist-modal-bio-box">
                                             {selectedArtist.bio}
                                         </div>
                                     </div>
                                 )}
 
-                                {/* Services List */}
+                                {/* Services */}
                                 {selectedArtist.services && selectedArtist.services.length > 0 && (
                                     <div>
-                                        <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: '8px' }}>Available Services</p>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                            {selectedArtist.services.map((service: any) => (
-                                                <div key={service.id} style={{
-                                                    padding: '12px',
-                                                    background: 'rgba(255,255,255,0.03)',
-                                                    borderRadius: '8px',
-                                                    border: '1px solid rgba(255,255,255,0.06)'
-                                                }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-                                                        <div>
-                                                            <strong style={{ color: 'var(--text-primary)', fontSize: '0.9rem', display: 'block' }}>{service.name}</strong>
-                                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                                                                <Clock size={12} /> {service.duration_minutes} min
-                                                            </span>
-                                                        </div>
-                                                        <span style={{ color: 'var(--brand-primary)', fontWeight: 600, fontSize: '0.95rem' }}>${service.price}</span>
+                                        <p className="artist-modal-section-title">Available Services</p>
+                                        {selectedArtist.services.map((service: any) => (
+                                            <div key={service.id} className="artist-service-card">
+                                                <div className="artist-service-top">
+                                                    <div>
+                                                        <p className="artist-service-name">{service.name}</p>
+                                                        <p className="artist-service-duration">
+                                                            <Clock size={11} /> {service.duration_minutes} min
+                                                        </p>
                                                     </div>
-                                                    {service.description && (
-                                                        <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '6px' }}>{service.description}</p>
-                                                    )}
+                                                    <span className="artist-service-price">${service.price}</span>
                                                 </div>
-                                            ))}
-                                        </div>
+                                                {service.description && (
+                                                    <p className="artist-service-desc">{service.description}</p>
+                                                )}
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
                             </div>
@@ -340,6 +352,24 @@ const ArtistsPage: React.FC = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {isAddModalOpen && (
+                <AddUserModal role="artist" onClose={() => setAddModalOpen(false)} />
+            )}
+
+            {isEditModalOpen && selectedEditUser && (
+                <EditUserModal user={selectedEditUser} onClose={() => setEditModalOpen(false)} />
+            )}
+
+            {deleteTargetId && (
+                <ConfirmDeleteModal
+                    title="Delete Artist Profile"
+                    message="Are you sure you want to permanently delete this artist profile? All services, bookings, and reviews linked to this profile will be affected."
+                    confirmLabel="Delete Artist"
+                    onConfirm={() => deleteArtistProfile(deleteTargetId)}
+                    onClose={() => setDeleteTargetId(null)}
+                />
+            )}
         </div>
     );
 };
