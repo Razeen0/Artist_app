@@ -24,7 +24,7 @@ class BookingSerializer < ActiveModel::Serializer
     object.end_time&.strftime("%H:%M")
   end
 
-  private
+
 
   # Inline summary of the artist who owns the booking, avoids embedding a full serializer.
   def artist
