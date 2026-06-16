@@ -150,19 +150,15 @@ export async function service<T = any>(
                 error.message ||
                 'Something went wrong';
 
-            return Promise.reject({
-                success: false,
-                error: backendError,
-                status: error.response?.status,
-                message,
-            });
+            const apiError = new Error(message);
+            (apiError as any).status  = error.response?.status;
+            (apiError as any).details = backendError;
+            return Promise.reject(apiError);
         }
 
-        return Promise.reject({
-            success: false,
-            status: 500,
-            message: 'Network error'
-        });
+        const networkError = new Error('Network error — please check your connection');
+        (networkError as any).status = 500;
+        return Promise.reject(networkError);
     }
 }
 

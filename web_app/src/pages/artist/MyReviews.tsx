@@ -65,7 +65,7 @@ const MyReviewsPage: React.FC = () => {
                 </motion.div>
             </div>
 
-            {error && <div className="error-banner"><AlertCircle size={16} /><span>{String(error)}</span></div>}
+            {error && <div className="error-banner"><AlertCircle size={16} /><span>{error instanceof Error ? error.message : "Failed to load reviews"}</span></div>}
 
             {/* Content Card */}
             <div className="content-card">

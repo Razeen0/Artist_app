@@ -193,7 +193,7 @@ const MyBookingsPage: React.FC = () => {
       {error && (
         <div className="error-banner">
           <AlertCircle size={16} />
-          <span>{String(error)}</span>
+          <span>{error instanceof Error ? error.message : "Failed to load bookings"}</span>
         </div>
       )}
 
