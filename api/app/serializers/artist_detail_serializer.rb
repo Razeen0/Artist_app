@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ArtistDetailSerializer < ActiveModel::Serializer
   attributes :id,
              :name,
@@ -7,16 +9,18 @@ class ArtistDetailSerializer < ActiveModel::Serializer
              :experience_years,
              :base_price,
              :is_approved,
+             :rating,
              :created_at
 
   has_many :services, serializer: ServiceDetailSerializer
-  has_many :reviews, serializer: ReviewDetailSerializer
+  has_many :reviews,  serializer: ReviewDetailSerializer
 
+  # Delegated through the ArtistProfile model's `delegate :name, :email, to: :user`
   def name
-    object.user&.name
+    object.name
   end
 
   def email
-    object.user&.email
+    object.email
   end
 end

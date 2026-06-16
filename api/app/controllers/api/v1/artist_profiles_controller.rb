@@ -1,62 +1,62 @@
+# frozen_string_literal: true
+
 module Api
   module V1
     class ArtistProfilesController < ApplicationController
       include Crudable
       load_and_authorize_resource except: [:index]
+
       # GET /api/v1/artists
       def index
         artists = ArtistProfile
-                   .where(is_approved: true)
-                   .includes(:services, :user)
+                    .approved
+                    .includes(:services, :user)
+                    .then { |scope| apply_search(scope) }
+                    .order(created_at: :desc)
 
-        # search
-        if params[:search].present?
-          artists = artists.joins(:user).where(
-            "users.name ILIKE :q OR artist_profiles.city ILIKE :q OR artist_profiles.bio ILIKE :q",
-            q: "%#{params[:search]}%"
-          )
-        end
-
-        artists = artists.order(created_at: :desc)
-
-        render_paginated_success(
-           artists,
-           message: "Artists retrieved successfully"
-        )
+        render_paginated_success(artists, message: "Artists retrieved successfully")
       end
 
+      # GET /api/v1/artists/:id
       def show
-         authorize! :read, ArtistProfile
+        authorize! :read, ArtistProfile
 
-         artist = ArtistProfile
-                   .includes(:user, :services, :reviews)
-                   .find_by(id: params[:id])
+        artist = ArtistProfile.includes(:user, :services, :reviews).find(params[:id])
 
-         return render_error(message: "Artist not found", status: :not_found) unless artist
-
-         render_success(
-           data: artist,
-           serializer: ArtistDetailSerializer,
-           message: "Artist details retrieved successfully"
-       )
+        render_success(
+          data: artist,
+          serializer: ArtistDetailSerializer,
+          message: "Artist details retrieved successfully"
+        )
       end
 
       private
 
       def artist_profile_params
-        params.require(:artist_profile).permit(:name, :bio, :experience_years, :base_price, :city ,:is_approved )
+        params.require(:artist_profile).permit(:name, :bio, :experience_years, :base_price, :city, :is_approved)
       end
 
       def resource_params
         artist_profile_params
       end
 
+      def allowed_sort_columns
+        %w[created_at base_price experience_years]
+      end
+
       def collection
-        ArtistProfile
-        .includes(:user, :services, :bookings, :reviews)
-        .order(created_at: :desc)
+        ArtistProfile.with_associations.order(created_at: :desc)
+      end
+
+      # Applies an optional full-text search across user name, city, and bio.
+      def apply_search(scope)
+        return scope if params[:search].blank?
+
+        scope.joins(:user).where(
+          "users.name ILIKE :q OR artist_profiles.city ILIKE :q OR artist_profiles.bio ILIKE :q",
+          q: "%#{params[:search]}%"
+        )
       end
     end
   end
 end
-

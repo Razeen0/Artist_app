@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class BookingSerializer < ActiveModel::Serializer
   attributes :id,
              :booking_date,
@@ -22,37 +24,29 @@ class BookingSerializer < ActiveModel::Serializer
     object.end_time&.strftime("%H:%M")
   end
 
+  private
+
+  # Inline summary of the artist who owns the booking, avoids embedding a full serializer.
   def artist
     user = object.artist_profile&.user
     return nil unless user
 
-    {
-      id: user.id,
-      email: user.email,
-      name: user.name
-    }
+    { id: user.id, name: user.name, email: user.email }
   end
 
+  # Inline summary of the booked service.
   def service
-    s = object.service
-    return nil unless s
+    svc = object.service
+    return nil unless svc
 
-    {
-      id: s.id,
-      name: s.name,
-      price: s.price.to_f,
-      duration_minutes: s.duration_minutes
-    }
+    { id: svc.id, name: svc.name, price: svc.price.to_f, duration_minutes: svc.duration_minutes }
   end
 
+  # Inline summary of the customer who placed the booking.
   def customer
     c = object.customer
     return nil unless c
 
-    {
-      id: c.id,
-      email: c.email,
-      name: c.name
-    }
+    { id: c.id, name: c.name, email: c.email }
   end
 end
